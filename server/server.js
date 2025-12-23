@@ -11,6 +11,11 @@ const sessionConfig = require('./config/session');
 
 // Import routes
 const authRoutes = require('./routes/auth');
+const programmeRoutes = require('./routes/programmes');
+const cohortRoutes = require('./routes/cohorts');
+const userRoutes = require('./routes/users');
+const enrollmentRoutes = require('./routes/enrollments');
+const attendanceRoutes = require('./routes/attendance');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -66,6 +71,11 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // API Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/programmes', programmeRoutes);
+app.use('/api/cohorts', cohortRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/enrollments', enrollmentRoutes);
+app.use('/api/attendance', attendanceRoutes);
 
 // Health check endpoint (for Railway)
 app.get('/health', (req, res) => {
