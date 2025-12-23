@@ -16,6 +16,11 @@ const cohortRoutes = require('./routes/cohorts');
 const userRoutes = require('./routes/users');
 const enrollmentRoutes = require('./routes/enrollments');
 const attendanceRoutes = require('./routes/attendance');
+const courseRoutes = require('./routes/courses');
+const moduleRoutes = require('./routes/modules');
+const uploadRoutes = require('./routes/upload');
+const progressRoutes = require('./routes/progress');
+const analyticsRoutes = require('./routes/analytics');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -28,11 +33,11 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net", "https://fonts.googleapis.com"],
       scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
       imgSrc: ["'self'", "data:", "https:"],
       connectSrc: ["'self'"],
-      fontSrc: ["'self'", "https://cdn.jsdelivr.net"],
+      fontSrc: ["'self'", "https://cdn.jsdelivr.net", "https://fonts.gstatic.com"],
     },
   },
 }));
@@ -76,6 +81,11 @@ app.use('/api/cohorts', cohortRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/enrollments', enrollmentRoutes);
 app.use('/api/attendance', attendanceRoutes);
+app.use('/api/courses', courseRoutes);
+app.use('/api/modules', moduleRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/progress', progressRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Health check endpoint (for Railway)
 app.get('/health', (req, res) => {
