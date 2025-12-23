@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Breakout LMS - Learning Management System</title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+  <!-- Login Screen -->
+  <div id="loginScreen" class="screen active">
+    <div class="login-container">
+      <div class="login-box">
+        <div class="login-header">
+          <h1>Breakout LMS</h1>
+          <p>Learning Management System for Breakout Programme & Mentoring Day</p>
+        </div>
+
+        <form id="loginForm" class="login-form">
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              required
+              autocomplete="username"
+              autofocus
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              name="password"
+              required
+              autocomplete="current-password"
+            >
+          </div>
+
+          <div id="loginError" class="error-message" style="display: none;"></div>
+
+          <button type="submit" class="btn-primary btn-block">
+            <span id="loginButtonText">Login</span>
+            <span id="loginSpinner" class="spinner" style="display: none;"></span>
+          </button>
+        </form>
+
+        <div class="login-footer">
+          <p>Powered by Boardwave</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Application Screen (hidden until logged in) -->
+  <div id="appScreen" class="screen">
+    <nav class="navbar">
+      <div class="navbar-brand">
+        <h2>Breakout LMS</h2>
+      </div>
+      <div class="navbar-menu">
+        <div class="navbar-user">
+          <span id="userDisplayName"></span>
+          <span id="userRole" class="role-badge"></span>
+          <button id="logoutButton" class="btn-secondary btn-sm">Logout</button>
+        </div>
+      </div>
+    </nav>
+
+    <div class="main-container">
+      <aside class="sidebar" id="sidebar">
+        <!-- Sidebar will be populated based on user role -->
+      </aside>
+
+      <main class="content" id="mainContent">
+        <div id="dashboardView">
+          <h1>Welcome to Breakout LMS</h1>
+          <p>Select an option from the sidebar to get started.</p>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Notification Toast -->
+  <div id="notificationToast" class="notification-toast"></div>
+
+  <!-- Scripts -->
+  <script src="/js/auth.js"></script>
+</body>
+</html>

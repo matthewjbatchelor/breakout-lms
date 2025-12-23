@@ -1,0 +1,13 @@
+node_modules/
+.env
+uploads/*
+!uploads/.gitkeep
+!uploads/avatars/.gitkeep
+!uploads/course-thumbnails/.gitkeep
+!uploads/module-resources/.gitkeep
+.DS_Store
+*.log
+npm-debug.log*
+.vscode/
+.idea/
+.claude/
