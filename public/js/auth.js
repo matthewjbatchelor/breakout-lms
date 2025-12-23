@@ -299,7 +299,11 @@ function showProgrammes() {
 }
 
 function showCohorts() {
-  document.getElementById('mainContent').innerHTML = '<h1>Cohorts</h1><p>Cohort management coming soon...</p>';
+  if (typeof initCohortsView === 'function') {
+    initCohortsView();
+  } else {
+    document.getElementById('mainContent').innerHTML = '<h1>Cohorts</h1><p>Cohort management coming soon...</p>';
+  }
 }
 
 function showCourses() {
@@ -307,7 +311,11 @@ function showCourses() {
 }
 
 function showUsers() {
-  document.getElementById('mainContent').innerHTML = '<h1>Users</h1><p>User management coming soon...</p>';
+  if (typeof initUsersView === 'function') {
+    initUsersView();
+  } else {
+    document.getElementById('mainContent').innerHTML = '<h1>Users</h1><p>User management coming soon...</p>';
+  }
 }
 
 function showEnrollments() {
