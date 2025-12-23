@@ -291,7 +291,11 @@ function showDashboard() {
 
 // Placeholder functions for different views (to be implemented)
 function showProgrammes() {
-  document.getElementById('mainContent').innerHTML = '<h1>Programmes</h1><p>Programme management coming soon...</p>';
+  if (typeof initProgrammesView === 'function') {
+    initProgrammesView();
+  } else {
+    document.getElementById('mainContent').innerHTML = '<h1>Programmes</h1><p>Programme management coming soon...</p>';
+  }
 }
 
 function showCohorts() {
