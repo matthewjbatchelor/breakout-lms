@@ -182,7 +182,12 @@ class API {
   }
 }
 
-// Export for use in other modules
+// Export for use in other modules (Node.js)
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = API;
+}
+
+// Make globally available in browser
+if (typeof window !== 'undefined') {
+  window.API = API;
 }

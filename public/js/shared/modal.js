@@ -274,7 +274,14 @@ function alertDialog(message, title = 'Alert') {
   });
 }
 
-// Export for use in other modules
+// Export for use in other modules (Node.js)
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = { Modal, confirmDialog, alertDialog };
+}
+
+// Make globally available in browser
+if (typeof window !== 'undefined') {
+  window.Modal = Modal;
+  window.confirmDialog = confirmDialog;
+  window.alertDialog = alertDialog;
 }

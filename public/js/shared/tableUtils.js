@@ -387,7 +387,7 @@ function createActionButtons(options) {
   return container;
 }
 
-// Export for use in other modules
+// Export for use in other modules (Node.js)
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
     TableManager,
@@ -396,4 +396,13 @@ if (typeof module !== 'undefined' && module.exports) {
     formatDateTime,
     createActionButtons
   };
+}
+
+// Make globally available in browser
+if (typeof window !== 'undefined') {
+  window.TableManager = TableManager;
+  window.formatDate = formatDate;
+  window.formatDateTime = formatDateTime;
+  window.createTableRow = createTableRow;
+  window.createActionButtons = createActionButtons;
 }
