@@ -3,6 +3,8 @@
  * Admin interface for managing courses and modules
  */
 
+console.log('✅ Courses.js loaded');
+
 let coursesTable = null;
 let allCourses = [];
 let allProgrammes = [];
@@ -506,3 +508,5 @@ window.deleteCourse = deleteCourse;
 window.managePrerequisites = managePrerequisites;
 window.addPrerequisite = addPrerequisite;
 window.removePrerequisite = removePrerequisite;
+
+console.log('✅ Courses functions exported:', typeof window.initCoursesView);

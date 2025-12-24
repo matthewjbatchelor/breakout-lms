@@ -3,6 +3,8 @@
  * Admin interface for managing cohorts
  */
 
+console.log('✅ Cohorts.js loaded');
+
 let cohortsTable = null;
 let allCohorts = [];
 let allProgrammes = [];
@@ -729,3 +731,5 @@ window.markSessionComplete = markSessionComplete;
 window.deleteSession = deleteSession;
 window.deleteCohort = deleteCohort;
 window.filterCohorts = filterCohorts;
+
+console.log('✅ Cohorts functions exported:', typeof window.initCohortsView);

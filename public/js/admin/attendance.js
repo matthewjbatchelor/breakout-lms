@@ -3,6 +3,8 @@
  * Admin interface for tracking session attendance
  */
 
+console.log('✅ Attendance.js loaded');
+
 let attendanceTable = null;
 let allAttendance = [];
 let allCohorts = [];
@@ -651,3 +653,5 @@ window.filterAttendance = filterAttendance;
 window.filterByCohort = filterByCohort;
 window.showBulkMarkAttendance = showBulkMarkAttendance;
 window.bulkSetAllStatus = bulkSetAllStatus;
+
+console.log('✅ Attendance functions exported:', typeof window.initAttendanceView);

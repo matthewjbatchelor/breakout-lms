@@ -299,17 +299,21 @@ function showProgrammes() {
 }
 
 function showCohorts() {
+  console.log('🔍 showCohorts called, initCohortsView type:', typeof initCohortsView);
   if (typeof initCohortsView === 'function') {
     initCohortsView();
   } else {
+    console.error('❌ initCohortsView is not a function!');
     document.getElementById('mainContent').innerHTML = '<h1>Cohorts</h1><p>Cohort management coming soon...</p>';
   }
 }
 
 function showCourses() {
+  console.log('🔍 showCourses called, initCoursesView type:', typeof initCoursesView);
   if (typeof initCoursesView === 'function') {
     initCoursesView();
   } else {
+    console.error('❌ initCoursesView is not a function!');
     document.getElementById('mainContent').innerHTML = '<h1>Courses</h1><p>Course management coming soon...</p>';
   }
 }
@@ -331,9 +335,11 @@ function showEnrollments() {
 }
 
 function showAttendance() {
+  console.log('🔍 showAttendance called, initAttendanceView type:', typeof initAttendanceView);
   if (typeof initAttendanceView === 'function') {
     initAttendanceView();
   } else {
+    console.error('❌ initAttendanceView is not a function!');
     document.getElementById('mainContent').innerHTML = '<h1>Attendance</h1><p>Attendance tracking coming soon...</p>';
   }
 }
