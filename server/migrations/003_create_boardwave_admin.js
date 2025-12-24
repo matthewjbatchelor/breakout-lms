@@ -12,17 +12,18 @@ async function up() {
 
     if (userCheck.rows.length > 0) {
       console.log('✓ User "boardwaveadmin" already exists');
-      console.log('   Updating password...');
+      console.log('   Updating password and email...');
 
-      // Update the password
+      // Update the password and email
       const passwordHash = await bcrypt.hash('B04rdwav3admin', 12);
       await query(`
         UPDATE users
-        SET password_hash = $1, is_active = true, role = 'admin'
-        WHERE username = $2
-      `, [passwordHash, 'boardwaveadmin']);
+        SET password_hash = $1, email = $2, is_active = true, role = 'admin'
+        WHERE username = $3
+      `, [passwordHash, 'matthew.batchelor@integritypartners.co.uk', 'boardwaveadmin']);
 
-      console.log('✅ Password updated for boardwaveadmin');
+      console.log('✅ Password and email updated for boardwaveadmin');
+      console.log('   Email: matthew.batchelor@integritypartners.co.uk');
       return;
     }
 
@@ -42,7 +43,7 @@ async function up() {
       ) VALUES ($1, $2, $3, $4, $5, $6, $7)
     `, [
       'boardwaveadmin',
-      'admin@boardwave.com',
+      'matthew.batchelor@integritypartners.co.uk',
       passwordHash,
       'admin',
       'Boardwave',
@@ -52,7 +53,7 @@ async function up() {
 
     console.log('✅ Created boardwaveadmin user');
     console.log('   Username: boardwaveadmin');
-    console.log('   Email: admin@boardwave.com');
+    console.log('   Email: matthew.batchelor@integritypartners.co.uk');
     console.log('   Password: B04rdwav3admin');
 
   } catch (error) {
