@@ -319,11 +319,19 @@ function showUsers() {
 }
 
 function showEnrollments() {
-  document.getElementById('mainContent').innerHTML = '<h1>Enrollments</h1><p>Enrollment management coming soon...</p>';
+  if (typeof initEnrollmentsView === 'function') {
+    initEnrollmentsView();
+  } else {
+    document.getElementById('mainContent').innerHTML = '<h1>Enrollments</h1><p>Enrollment management coming soon...</p>';
+  }
 }
 
 function showAttendance() {
-  document.getElementById('mainContent').innerHTML = '<h1>Attendance</h1><p>Attendance tracking coming soon...</p>';
+  if (typeof initAttendanceView === 'function') {
+    initAttendanceView();
+  } else {
+    document.getElementById('mainContent').innerHTML = '<h1>Attendance</h1><p>Attendance tracking coming soon...</p>';
+  }
 }
 
 function showAnalytics() {
