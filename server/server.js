@@ -13,6 +13,7 @@ const sessionConfig = require('./config/session');
 const authRoutes = require('./routes/auth');
 const programmeRoutes = require('./routes/programmes');
 const cohortRoutes = require('./routes/cohorts');
+const cohortSessionRoutes = require('./routes/cohortSessions');
 const userRoutes = require('./routes/users');
 const enrollmentRoutes = require('./routes/enrollments');
 const attendanceRoutes = require('./routes/attendance');
@@ -78,6 +79,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 app.use('/api/auth', authRoutes);
 app.use('/api/programmes', programmeRoutes);
 app.use('/api/cohorts', cohortRoutes);
+app.use('/api/cohort-sessions', cohortSessionRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/enrollments', enrollmentRoutes);
 app.use('/api/attendance', attendanceRoutes);
@@ -128,6 +130,12 @@ async function startServer() {
 
     const boardwaveAdminMigration = require('./migrations/003_create_boardwave_admin');
     await boardwaveAdminMigration.up();
+
+    const cohortSessionsMigration = require('./migrations/004_add_cohort_sessions');
+    await cohortSessionsMigration.up();
+
+    const coursePrerequisitesMigration = require('./migrations/005_add_course_prerequisites');
+    await coursePrerequisitesMigration.up();
 
     // Start server
     app.listen(PORT, () => {
