@@ -21,8 +21,11 @@ async function initAttendanceView() {
         <p>Record and manage participant attendance</p>
       </div>
       <div class="view-actions">
-        <button onclick="showMarkAttendanceModal()" class="btn btn-primary">
-          <span>+ Mark Attendance</span>
+        <button onclick="showBulkMarkAttendance()" class="btn btn-primary">
+          <span>✓ Bulk Mark Session</span>
+        </button>
+        <button onclick="showMarkAttendanceModal()" class="btn btn-secondary">
+          <span>+ Mark Individual</span>
         </button>
         <button onclick="showImportAttendanceModal()" class="btn btn-secondary">
           <span>📥 Import CSV</span>
@@ -509,6 +512,134 @@ async function deleteAttendance(attendanceId) {
   }
 }
 
+/**
+ * Show bulk mark attendance modal
+ */
+async function showBulkMarkAttendance() {
+  if (!selectedCohortId) {
+    showNotification('Please select a cohort first', 'warning');
+    return;
+  }
+
+  try {
+    const participants = await API.get(`/api/cohorts/${selectedCohortId}/participants`);
+
+    if (participants.length === 0) {
+      showNotification('No participants enrolled in this cohort', 'warning');
+      return;
+    }
+
+    const modal = new Modal();
+
+    modal.show({
+      title: 'Bulk Mark Attendance',
+      size: 'large',
+      content: `
+        <form>
+          <div class="form-group required">
+            <label for="bulkSessionDate">Session Date</label>
+            <input type="date" id="bulkSessionDate" name="sessionDate" class="form-input"
+                   value="${new Date().toISOString().split('T')[0]}" required>
+          </div>
+
+          <div class="form-group required">
+            <label for="bulkSessionName">Session Name</label>
+            <input type="text" id="bulkSessionName" name="sessionName" class="form-input" required
+                   placeholder="e.g., Week 1: Introduction">
+          </div>
+
+          <div class="form-group">
+            <label>Quick Actions</label>
+            <div class="status-presets">
+              <button type="button" class="btn btn-preset" onclick="bulkSetAllStatus('present')">
+                ✓ Mark All Present
+              </button>
+              <button type="button" class="btn btn-preset" onclick="bulkSetAllStatus('absent')">
+                ✗ Mark All Absent
+              </button>
+            </div>
+          </div>
+
+          <div class="bulk-participants-list">
+            <h4>Participants</h4>
+            <table style="width: 100%;">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${participants.map(p => `
+                  <tr>
+                    <td>${p.firstName} ${p.lastName}</td>
+                    <td>
+                      <select class="attendance-select form-select" data-participant-id="${p.userId || p.id}">
+                        <option value="present">Present</option>
+                        <option value="absent">Absent</option>
+                        <option value="late">Late</option>
+                        <option value="excused">Excused</option>
+                      </select>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </form>
+      `,
+      submitText: 'Save Attendance',
+      onSubmit: async (modalInstance) => {
+        const sessionDate = document.getElementById('bulkSessionDate').value;
+        const sessionName = document.getElementById('bulkSessionName').value;
+
+        if (!sessionDate || !sessionName) {
+          modalInstance.showError('Please fill in session date and name');
+          return false;
+        }
+
+        const selects = document.querySelectorAll('.attendance-select');
+        const attendanceData = Array.from(selects).map(select => ({
+          userId: parseInt(select.dataset.participantId),
+          status: select.value
+        }));
+
+        modalInstance.setLoading(true);
+
+        try {
+          const result = await API.post('/api/attendance/bulk', {
+            cohortId: selectedCohortId,
+            sessionDate: sessionDate,
+            sessionName: sessionName,
+            attendanceData: attendanceData
+          });
+
+          showNotification(`Attendance marked for ${result.recorded} participants`, 'success');
+          await loadAttendance();
+          return true;
+        } catch (error) {
+          modalInstance.setLoading(false);
+          modalInstance.showError(error.message || 'Failed to mark attendance');
+          return false;
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Failed to load participants:', error);
+    showNotification('Failed to load participants', 'error');
+  }
+}
+
+/**
+ * Bulk set all participants to a status
+ */
+function bulkSetAllStatus(status) {
+  const selects = document.querySelectorAll('.attendance-select');
+  selects.forEach(select => {
+    select.value = status;
+  });
+}
+
 // Make functions globally available
 window.initAttendanceView = initAttendanceView;
 window.showMarkAttendanceModal = showMarkAttendanceModal;
@@ -518,3 +649,5 @@ window.exportAttendance = exportAttendance;
 window.deleteAttendance = deleteAttendance;
 window.filterAttendance = filterAttendance;
 window.filterByCohort = filterByCohort;
+window.showBulkMarkAttendance = showBulkMarkAttendance;
+window.bulkSetAllStatus = bulkSetAllStatus;

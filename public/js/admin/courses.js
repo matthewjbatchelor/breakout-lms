@@ -129,7 +129,8 @@ function renderCourseRow(course) {
     <td>${formatDate(course.createdAt)}</td>
     <td class="col-actions">
       <div class="table-actions">
-        <button class="btn btn-sm btn-secondary" onclick="viewCourseModules(${course.id})">Modules</button>
+        <button class="btn btn-sm btn-secondary" onclick="managePrerequisites(${course.id})">🔗 Prerequisites</button>
+        <button class="btn btn-sm btn-secondary" onclick="viewCourseModules(${course.id})">📑 Modules</button>
         <button class="btn btn-sm btn-primary" onclick="showEditCourseModal(${course.id})">Edit</button>
         <button class="btn btn-sm btn-danger" onclick="deleteCourse(${course.id})">Delete</button>
       </div>
@@ -367,9 +368,141 @@ async function deleteCourse(courseId) {
   }
 }
 
+/**
+ * Manage course prerequisites
+ */
+async function managePrerequisites(courseId) {
+  try {
+    const [course, prerequisites, dependents] = await Promise.all([
+      API.get(`/api/courses/${courseId}`),
+      API.get(`/api/courses/${courseId}/prerequisites`),
+      API.get(`/api/courses/${courseId}/dependents`)
+    ]);
+
+    const availableCourses = allCourses.filter(c =>
+      c.id !== courseId && !prerequisites.some(p => p.id === c.id)
+    );
+
+    const modal = new Modal();
+
+    modal.show({
+      title: `Prerequisites - ${course.title}`,
+      size: 'large',
+      content: `
+        <div class="prerequisites-modal">
+          <div class="prerequisites-section">
+            <h3>Current Prerequisites</h3>
+            ${prerequisites.length === 0 ?
+              '<p class="empty-state">No prerequisites set. This course can be taken without completing other courses first.</p>' :
+              `<div class="prerequisite-list">
+                ${prerequisites.map(prereq => `
+                  <div class="prerequisite-item">
+                    <div class="prerequisite-info">
+                      <h4>${prereq.title}</h4>
+                      ${prereq.description ? `<p>${prereq.description}</p>` : ''}
+                    </div>
+                    <button class="btn btn-danger btn-sm" onclick="removePrerequisite(${courseId}, ${prereq.id})">
+                      Remove
+                    </button>
+                  </div>
+                `).join('')}
+              </div>`
+            }
+
+            ${availableCourses.length > 0 ? `
+              <div class="add-prerequisite" style="margin-top: 1.5rem; padding: 1rem; background: #1a1a1a; border-radius: 8px;">
+                <h4 style="margin: 0 0 1rem 0; color: #b8a67d;">Add Prerequisite</h4>
+                <select id="prerequisiteSelect" class="form-select" style="margin-bottom: 1rem;">
+                  <option value="">Select a course...</option>
+                  ${availableCourses.map(c => `
+                    <option value="${c.id}">${c.title}</option>
+                  `).join('')}
+                </select>
+                <button class="btn btn-primary" onclick="addPrerequisite(${courseId})">
+                  Add Prerequisite
+                </button>
+              </div>
+            ` : ''}
+          </div>
+
+          ${dependents.length > 0 ? `
+            <div class="dependents-section" style="margin-top: 2rem;">
+              <h3 style="color: #b8a67d; margin-bottom: 1rem;">Courses that Require This Course</h3>
+              <p class="info-text">The following courses require "${course.title}" as a prerequisite:</p>
+              <div class="dependent-list">
+                ${dependents.map(dep => `
+                  <div class="dependent-item" style="padding: 0.75rem 1rem; background: #2a2a2a; border-radius: 6px; border-left: 3px solid #666; margin-bottom: 0.5rem;">
+                    <span class="course-title">${dep.title}</span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      `,
+      showFooter: false
+    });
+
+    // Store current course for prerequisite operations
+    window.currentPrereqCourseId = courseId;
+  } catch (error) {
+    console.error('Failed to load prerequisites:', error);
+    showNotification('Failed to load prerequisites', 'error');
+  }
+}
+
+/**
+ * Add prerequisite
+ */
+async function addPrerequisite(courseId) {
+  const select = document.getElementById('prerequisiteSelect');
+  const prerequisiteId = select.value;
+
+  if (!prerequisiteId) {
+    showNotification('Please select a course', 'warning');
+    return;
+  }
+
+  try {
+    await API.post(`/api/courses/${courseId}/prerequisites`, {
+      prerequisiteCourseId: parseInt(prerequisiteId)
+    });
+
+    showNotification('Prerequisite added successfully', 'success');
+    managePrerequisites(courseId); // Reload
+  } catch (error) {
+    console.error('Failed to add prerequisite:', error);
+    showNotification(error.message || 'Failed to add prerequisite', 'error');
+  }
+}
+
+/**
+ * Remove prerequisite
+ */
+async function removePrerequisite(courseId, prerequisiteId) {
+  const confirmed = await confirmDialog(
+    'Remove this prerequisite? Students will no longer need to complete this course first.',
+    'Remove Prerequisite'
+  );
+
+  if (!confirmed) return;
+
+  try {
+    await API.delete(`/api/courses/${courseId}/prerequisites/${prerequisiteId}`);
+    showNotification('Prerequisite removed successfully', 'success');
+    managePrerequisites(courseId); // Reload
+  } catch (error) {
+    console.error('Failed to remove prerequisite:', error);
+    showNotification('Failed to remove prerequisite', 'error');
+  }
+}
+
 // Make functions globally available
 window.initCoursesView = initCoursesView;
 window.showAddCourseModal = showAddCourseModal;
 window.showEditCourseModal = showEditCourseModal;
 window.viewCourseModules = viewCourseModules;
 window.deleteCourse = deleteCourse;
+window.managePrerequisites = managePrerequisites;
+window.addPrerequisite = addPrerequisite;
+window.removePrerequisite = removePrerequisite;

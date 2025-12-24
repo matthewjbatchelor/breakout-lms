@@ -185,7 +185,8 @@ function renderCohortRow(cohort) {
     <td>${cohort.participantCount || 0} / ${cohort.maxParticipants || '∞'}</td>
     <td class="col-actions">
       <div class="table-actions">
-        <button class="btn btn-sm btn-secondary" onclick="viewCohortParticipants(${cohort.id})">View</button>
+        <button class="btn btn-sm btn-secondary" onclick="viewCohortSessions(${cohort.id})">📅 Sessions</button>
+        <button class="btn btn-sm btn-secondary" onclick="viewCohortParticipants(${cohort.id})">👥 View</button>
         <button class="btn btn-sm btn-primary" onclick="showEditCohortModal(${cohort.id})">Edit</button>
         <button class="btn btn-sm btn-danger" onclick="deleteCohort(${cohort.id})">Delete</button>
       </div>
@@ -455,10 +456,276 @@ async function deleteCohort(cohortId) {
   }
 }
 
+/**
+ * View cohort sessions with enhanced session management
+ */
+async function viewCohortSessions(cohortId) {
+  try {
+    const [cohort, sessions] = await Promise.all([
+      API.get(`/api/cohorts/${cohortId}`),
+      API.get(`/api/cohort-sessions/cohort/${cohortId}/with-stats`)
+    ]);
+
+    const modal = new Modal();
+    modal.show({
+      title: `Sessions - ${cohort.name}`,
+      size: 'large',
+      content: renderSessionsContent(cohort, sessions),
+      showFooter: false
+    });
+
+    // Store current cohort for session operations
+    window.currentSessionCohortId = cohortId;
+  } catch (error) {
+    console.error('Failed to load sessions:', error);
+    showNotification('Failed to load sessions', 'error');
+  }
+}
+
+/**
+ * Render sessions content
+ */
+function renderSessionsContent(cohort, sessions) {
+  const grouped = groupSessionsByMonth(sessions);
+
+  return `
+    <div class="sessions-modal-enhanced">
+      <div class="view-header" style="margin-bottom: 1.5rem;">
+        <p>${cohort.programmeName || ''} | ${formatDate(cohort.startDate)} - ${formatDate(cohort.endDate)}</p>
+        <button class="btn btn-primary" onclick="showAddSessionModal()">
+          ➕ Add Session
+        </button>
+      </div>
+
+      <div class="sessions-list">
+        ${sessions.length === 0 ?
+          '<p class="empty-state">No sessions scheduled. Add a session to get started.</p>' :
+          renderSessionTimeline(grouped)
+        }
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Group sessions by month
+ */
+function groupSessionsByMonth(sessions) {
+  const grouped = {};
+  sessions.forEach(session => {
+    const date = new Date(session.sessionDate);
+    const monthKey = date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+    if (!grouped[monthKey]) grouped[monthKey] = [];
+    grouped[monthKey].push(session);
+  });
+  return grouped;
+}
+
+/**
+ * Render session timeline
+ */
+function renderSessionTimeline(grouped) {
+  return Object.entries(grouped).map(([month, sessions]) => `
+    <div class="session-month">
+      <h3 class="month-header">${month}</h3>
+      ${sessions.map(session => renderSessionCard(session)).join('')}
+    </div>
+  `).join('');
+}
+
+/**
+ * Render individual session card
+ */
+function renderSessionCard(session) {
+  const attendanceRate = session.totalMarked > 0
+    ? Math.round((session.presentCount / session.totalMarked) * 100)
+    : 0;
+
+  const sessionDate = new Date(session.sessionDate);
+
+  return `
+    <div class="session-card ${session.isCompleted ? 'completed' : 'upcoming'}">
+      <div class="session-date">
+        <div class="date-day">${sessionDate.getDate()}</div>
+        <div class="date-month">${sessionDate.toLocaleDateString('en-US', { month: 'short' })}</div>
+      </div>
+
+      <div class="session-details">
+        <h4>${session.sessionName}</h4>
+        <div class="session-meta">
+          ${session.startTime ? `<span>⏰ ${session.startTime} - ${session.endTime || 'TBD'}</span>` : ''}
+          ${session.location ? `<span>📍 ${session.location}</span>` : ''}
+          <span class="session-type">${session.sessionType}</span>
+        </div>
+        ${session.description ? `<p class="session-description">${session.description}</p>` : ''}
+
+        <div class="session-attendance">
+          <div class="attendance-bar">
+            <div class="attendance-fill" style="width: ${attendanceRate}%"></div>
+          </div>
+          <span class="attendance-stats">
+            ${session.presentCount} present, ${session.absentCount} absent, ${session.lateCount} late
+          </span>
+        </div>
+      </div>
+
+      <div class="session-actions">
+        ${!session.isCompleted ? `
+          <button class="btn btn-sm btn-success" onclick="markSessionComplete(${session.id})">
+            ✓ Complete
+          </button>
+        ` : `
+          <span class="badge badge-success">Completed</span>
+        `}
+        <button class="btn btn-sm btn-danger" onclick="deleteSession(${session.id})">
+          🗑️
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Show add session modal
+ */
+async function showAddSessionModal() {
+  const modal = new Modal();
+
+  modal.show({
+    title: 'Add Session',
+    size: 'medium',
+    content: `
+      <form>
+        <div class="form-group required">
+          <label for="sessionName">Session Name</label>
+          <input type="text" id="sessionName" name="sessionName" class="form-input" required
+                 placeholder="e.g., Week 1: Introduction to Business">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group required">
+            <label for="sessionDate">Date</label>
+            <input type="date" id="sessionDate" name="sessionDate" class="form-input" required>
+          </div>
+
+          <div class="form-group">
+            <label for="sessionType">Type</label>
+            <select id="sessionType" name="sessionType" class="form-select">
+              <option value="lecture">Lecture</option>
+              <option value="workshop">Workshop</option>
+              <option value="seminar">Seminar</option>
+              <option value="practical">Practical</option>
+              <option value="assessment">Assessment</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="startTime">Start Time</label>
+            <input type="time" id="startTime" name="startTime" class="form-input">
+          </div>
+
+          <div class="form-group">
+            <label for="endTime">End Time</label>
+            <input type="time" id="endTime" name="endTime" class="form-input">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="location">Location</label>
+          <input type="text" id="location" name="location" class="form-input"
+                 placeholder="e.g., Room 101, Online via Zoom">
+        </div>
+
+        <div class="form-group">
+          <label for="description">Description</label>
+          <textarea id="description" name="description" class="form-textarea" rows="3"
+                    placeholder="Session objectives, topics, or notes"></textarea>
+        </div>
+      </form>
+    `,
+    submitText: 'Create Session',
+    onSubmit: async (modalInstance) => {
+      const formData = modalInstance.getFormData();
+
+      if (!formData.sessionName || !formData.sessionDate) {
+        modalInstance.showError('Please fill in all required fields');
+        return false;
+      }
+
+      modalInstance.setLoading(true);
+
+      try {
+        await API.post('/api/cohort-sessions', {
+          cohortId: window.currentSessionCohortId,
+          sessionName: formData.sessionName,
+          sessionDate: formData.sessionDate,
+          sessionType: formData.sessionType || 'lecture',
+          startTime: formData.startTime || null,
+          endTime: formData.endTime || null,
+          location: formData.location || null,
+          description: formData.description || null
+        });
+
+        showNotification('Session created successfully', 'success');
+        viewCohortSessions(window.currentSessionCohortId); // Reload
+        return true;
+      } catch (error) {
+        modalInstance.setLoading(false);
+        modalInstance.showError(error.message || 'Failed to create session');
+        return false;
+      }
+    }
+  });
+}
+
+/**
+ * Mark session as complete
+ */
+async function markSessionComplete(sessionId) {
+  const notes = prompt('Enter completion notes (optional):');
+
+  try {
+    await API.post(`/api/cohort-sessions/${sessionId}/complete`, { notes });
+    showNotification('Session marked as complete', 'success');
+    viewCohortSessions(window.currentSessionCohortId);
+  } catch (error) {
+    console.error('Failed to mark session complete:', error);
+    showNotification('Failed to mark session complete', 'error');
+  }
+}
+
+/**
+ * Delete session
+ */
+async function deleteSession(sessionId) {
+  const confirmed = await confirmDialog(
+    'Are you sure you want to delete this session?',
+    'Delete Session'
+  );
+
+  if (!confirmed) return;
+
+  try {
+    await API.delete(`/api/cohort-sessions/${sessionId}`);
+    showNotification('Session deleted successfully', 'success');
+    viewCohortSessions(window.currentSessionCohortId);
+  } catch (error) {
+    console.error('Failed to delete session:', error);
+    showNotification('Failed to delete session', 'error');
+  }
+}
+
 // Make functions globally available
 window.initCohortsView = initCohortsView;
 window.showAddCohortModal = showAddCohortModal;
 window.showEditCohortModal = showEditCohortModal;
 window.viewCohortParticipants = viewCohortParticipants;
+window.viewCohortSessions = viewCohortSessions;
+window.showAddSessionModal = showAddSessionModal;
+window.markSessionComplete = markSessionComplete;
+window.deleteSession = deleteSession;
 window.deleteCohort = deleteCohort;
 window.filterCohorts = filterCohorts;
