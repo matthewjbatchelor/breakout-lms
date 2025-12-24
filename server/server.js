@@ -119,33 +119,63 @@ async function startServer() {
   try {
     console.log('🚀 Starting Breakout LMS...');
     console.log(`   Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`   Port: ${PORT}`);
+    console.log(`   Database URL: ${process.env.DATABASE_URL ? 'Set' : 'NOT SET'}`);
 
-    // Run database migrations
-    console.log('\n📊 Running database migrations...');
-    const schemaMigration = require('./migrations/001_init_schema');
-    await schemaMigration.up();
+    // Start server FIRST, then run migrations
+    // This prevents Railway from killing the process during migration
+    const server = app.listen(PORT, '0.0.0.0', () => {
+      console.log(`\n✅ Server listening on port ${PORT}`);
+      console.log(`   Binding to 0.0.0.0:${PORT}`);
+      console.log('\n📊 Starting database migrations...');
 
-    const seedMigration = require('./migrations/002_seed_initial_data');
-    await seedMigration.up();
-
-    const boardwaveAdminMigration = require('./migrations/003_create_boardwave_admin');
-    await boardwaveAdminMigration.up();
-
-    const cohortSessionsMigration = require('./migrations/004_add_cohort_sessions');
-    await cohortSessionsMigration.up();
-
-    const coursePrerequisitesMigration = require('./migrations/005_add_course_prerequisites');
-    await coursePrerequisitesMigration.up();
-
-    // Start server
-    app.listen(PORT, '0.0.0.0', () => {
-      console.log(`\n✅ Server running on port ${PORT}`);
-      console.log(`   Local: http://localhost:${PORT}`);
-      console.log('\n📝 Ready to accept connections\n');
+      // Run migrations after server is listening
+      runMigrations().catch(error => {
+        console.error('❌ Migration failed:', error);
+        // Don't exit - let the server stay up even if migrations fail
+      });
     });
+
+    // Handle server errors
+    server.on('error', (error) => {
+      console.error('❌ Server error:', error);
+      process.exit(1);
+    });
+
   } catch (error) {
     console.error('\n❌ Failed to start server:', error);
     process.exit(1);
+  }
+}
+
+// Run migrations separately
+async function runMigrations() {
+  try {
+    console.log('   Running migration 001...');
+    const schemaMigration = require('./migrations/001_init_schema');
+    await schemaMigration.up();
+
+    console.log('   Running migration 002...');
+    const seedMigration = require('./migrations/002_seed_initial_data');
+    await seedMigration.up();
+
+    console.log('   Running migration 003...');
+    const boardwaveAdminMigration = require('./migrations/003_create_boardwave_admin');
+    await boardwaveAdminMigration.up();
+
+    console.log('   Running migration 004...');
+    const cohortSessionsMigration = require('./migrations/004_add_cohort_sessions');
+    await cohortSessionsMigration.up();
+
+    console.log('   Running migration 005...');
+    const coursePrerequisitesMigration = require('./migrations/005_add_course_prerequisites');
+    await coursePrerequisitesMigration.up();
+
+    console.log('\n✅ All migrations completed successfully');
+    console.log('📝 Ready to accept connections\n');
+  } catch (error) {
+    console.error('❌ Migration error:', error);
+    throw error;
   }
 }
 
