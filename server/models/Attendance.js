@@ -144,6 +144,39 @@ class Attendance {
     }));
   }
 
+  // Get all attendance records with user and cohort details
+  static async getAllWithDetails() {
+    const result = await query(`
+      SELECT
+        a.*,
+        u.username,
+        u.email,
+        u.first_name,
+        u.last_name,
+        c.name as cohort_name,
+        c.programme_id,
+        p.name as programme_name
+      FROM attendance_records a
+      JOIN users u ON u.id = a.user_id
+      JOIN cohorts c ON c.id = a.cohort_id
+      LEFT JOIN programmes p ON p.id = c.programme_id
+      ORDER BY a.session_date DESC, c.name, u.last_name, u.first_name
+    `);
+
+    return result.rows.map(row => ({
+      ...this.deserialize(row),
+      participantName: `${row.first_name} ${row.last_name}`,
+      cohortName: row.cohort_name,
+      programmeName: row.programme_name,
+      user: {
+        username: row.username,
+        email: row.email,
+        firstName: row.first_name,
+        lastName: row.last_name
+      }
+    }));
+  }
+
   // Get attendance stats for a cohort
   static async getStatsForCohort(cohortId) {
     const result = await query(`

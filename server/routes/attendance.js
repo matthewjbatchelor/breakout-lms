@@ -17,6 +17,17 @@ const validateAttendance = [
   body('sessionName').optional().trim()
 ];
 
+// Get all attendance records with user details
+router.get('/', ensureMentor, async (req, res) => {
+  try {
+    const attendance = await Attendance.getAllWithDetails();
+    res.json(attendance);
+  } catch (error) {
+    console.error('Error fetching all attendance:', error);
+    res.status(500).json({ error: 'Failed to fetch attendance records' });
+  }
+});
+
 // Get attendance by cohort
 router.get('/cohort/:cohortId', ensureMentor, async (req, res) => {
   try {
