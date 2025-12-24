@@ -5,15 +5,20 @@ const { ensureAuthenticated } = require('../middleware/auth');
 
 // Login endpoint
 router.post('/login', (req, res, next) => {
+  console.log('🔐 Login attempt:', { username: req.body.username, hasPassword: !!req.body.password });
+
   passport.authenticate('local', (err, user, info) => {
     if (err) {
-      console.error('Login error:', err);
+      console.error('❌ Login error:', err);
       return res.status(500).json({ error: 'An error occurred during login' });
     }
 
     if (!user) {
+      console.log('❌ Authentication failed:', info);
       return res.status(401).json({ error: info.message || 'Invalid credentials' });
     }
+
+    console.log('✅ User authenticated:', { id: user.id, username: user.username, role: user.role });
 
     req.logIn(user, (err) => {
       if (err) {

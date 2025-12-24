@@ -47,7 +47,17 @@ class User {
 
   // Find user by username (for login)
   static async findByUsername(username) {
+    console.log('🔍 User.findByUsername:', username);
     const result = await query('SELECT * FROM users WHERE username = $1', [username]);
+    console.log('📊 Query result:', { found: !!result.rows[0], rowCount: result.rowCount });
+    if (result.rows[0]) {
+      console.log('👤 User details:', {
+        id: result.rows[0].id,
+        username: result.rows[0].username,
+        is_active: result.rows[0].is_active,
+        hasPasswordHash: !!result.rows[0].password_hash
+      });
+    }
     return result.rows[0] || null;
   }
 
@@ -128,7 +138,12 @@ class User {
 
   // Verify password
   static async verifyPassword(plainPassword, passwordHash) {
-    return await bcrypt.compare(plainPassword, passwordHash);
+    console.log('🔑 User.verifyPassword: Comparing passwords...');
+    console.log('   Plain password length:', plainPassword?.length);
+    console.log('   Hash exists:', !!passwordHash);
+    const result = await bcrypt.compare(plainPassword, passwordHash);
+    console.log('   Match result:', result);
+    return result;
   }
 
   // Update last login timestamp

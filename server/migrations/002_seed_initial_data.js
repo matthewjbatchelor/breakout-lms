@@ -2,7 +2,7 @@ const { query } = require('../config/database');
 const bcrypt = require('bcrypt');
 
 async function up() {
-  console.log('Seeding initial data...');
+  console.log('🌱 Seeding initial data...');
 
   try {
     // Check if admin user already exists
@@ -14,6 +14,11 @@ async function up() {
 
     if (adminCheck.rows[0].exists) {
       console.log('✓ Admin user already exists, skipping seed');
+      console.log('📊 Checking existing admin users:');
+      const admins = await query(`SELECT username, email, is_active FROM users WHERE role = 'admin'`);
+      admins.rows.forEach(admin => {
+        console.log(`   - ${admin.username} (${admin.email}) - Active: ${admin.is_active}`);
+      });
       return;
     }
 
@@ -21,6 +26,11 @@ async function up() {
     const adminUsername = process.env.ADMIN_USERNAME || 'admin';
     const adminPassword = process.env.ADMIN_PASSWORD || 'changeme123';
     const adminEmail = process.env.ADMIN_EMAIL || 'admin@example.com';
+
+    console.log('🔑 Creating admin with credentials:');
+    console.log('   Username:', adminUsername);
+    console.log('   Email:', adminEmail);
+    console.log('   Password length:', adminPassword.length);
 
     // Hash password
     const passwordHash = await bcrypt.hash(adminPassword, 12);
