@@ -138,7 +138,7 @@ async function startServer() {
     await coursePrerequisitesMigration.up();
 
     // Start server
-    app.listen(PORT, () => {
+    app.listen(PORT, '0.0.0.0', () => {
       console.log(`\n✅ Server running on port ${PORT}`);
       console.log(`   Local: http://localhost:${PORT}`);
       console.log('\n📝 Ready to accept connections\n');
