@@ -307,7 +307,11 @@ function showCohorts() {
 }
 
 function showCourses() {
-  document.getElementById('mainContent').innerHTML = '<h1>Courses</h1><p>Course management coming soon...</p>';
+  if (typeof initCoursesView === 'function') {
+    initCoursesView();
+  } else {
+    document.getElementById('mainContent').innerHTML = '<h1>Courses</h1><p>Course management coming soon...</p>';
+  }
 }
 
 function showUsers() {
@@ -335,7 +339,11 @@ function showAttendance() {
 }
 
 function showAnalytics() {
-  document.getElementById('mainContent').innerHTML = '<h1>Analytics</h1><p>Analytics dashboard coming soon...</p>';
+  if (typeof initAnalyticsView === 'function') {
+    initAnalyticsView();
+  } else {
+    document.getElementById('mainContent').innerHTML = '<h1>Analytics</h1><p>Analytics dashboard coming soon...</p>';
+  }
 }
 
 function showImport() {
