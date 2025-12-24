@@ -1,7 +1,7 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const CohortSession = require('../models/CohortSession');
-const { ensureAuthenticated, ensureAdmin, ensureAdminOrMentor } = require('../middleware/auth');
+const { ensureAuthenticated, ensureAdmin, ensureMentor } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -46,7 +46,7 @@ router.get('/:id', async (req, res) => {
 
 // Create new session (admin/mentor only)
 router.post('/',
-  ensureAdminOrMentor,
+  ensureMentor,
   [
     body('cohortId').isInt({ min: 1 }),
     body('sessionName').trim().notEmpty().withMessage('Session name is required'),
@@ -75,7 +75,7 @@ router.post('/',
 
 // Update session (admin/mentor only)
 router.put('/:id',
-  ensureAdminOrMentor,
+  ensureMentor,
   [
     body('sessionName').optional().trim().notEmpty(),
     body('sessionDate').optional().isDate(),
@@ -108,7 +108,7 @@ router.put('/:id',
 
 // Mark session as completed (admin/mentor only)
 router.post('/:id/complete',
-  ensureAdminOrMentor,
+  ensureMentor,
   [
     body('notes').optional().trim()
   ],
