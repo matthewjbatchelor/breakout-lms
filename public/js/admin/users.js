@@ -3,9 +3,9 @@
  * Admin interface for managing users
  */
 
-let usersTable = null;
-let allUsers = [];
-let currentRoleFilter = 'all';
+var usersTable = null;
+var usersList = [];
+var currentRoleFilter = 'all';
 
 /**
  * Initialize the users view
@@ -100,7 +100,7 @@ async function initUsersView() {
 async function loadUsers() {
   try {
     const users = await API.get('/api/users');
-    allUsers = users;
+    usersList = users;
 
     // Update stats
     const stats = calculateUserStats(users);
@@ -153,9 +153,9 @@ function filterUsersByRole(role) {
   });
 
   // Filter data
-  let filteredData = allUsers;
+  let filteredData = usersList;
   if (role !== 'all') {
-    filteredData = allUsers.filter(u => u.role === role);
+    filteredData = usersList.filter(u => u.role === role);
   }
 
   usersTable.setData(filteredData);

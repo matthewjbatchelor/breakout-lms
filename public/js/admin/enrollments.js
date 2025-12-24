@@ -3,10 +3,10 @@
  * Admin interface for managing participant enrollments
  */
 
-let enrollmentsTable = null;
-let allEnrollments = [];
-let allCohorts = [];
-let allParticipants = [];
+var enrollmentsTable = null;
+var enrollmentsList = [];
+var enrollmentsCohorts = [];
+var enrollmentsParticipants = [];
 
 /**
  * Initialize the enrollments view
@@ -105,7 +105,7 @@ async function initEnrollmentsView() {
  */
 async function loadCohorts() {
   try {
-    allCohorts = await API.get('/api/cohorts');
+    enrollmentsCohorts = await API.get('/api/cohorts');
   } catch (error) {
     console.error('Error loading cohorts:', error);
   }
@@ -117,7 +117,7 @@ async function loadCohorts() {
 async function loadParticipants() {
   try {
     const users = await API.get('/api/users/role/participant');
-    allParticipants = users;
+    enrollmentsParticipants = users;
   } catch (error) {
     console.error('Error loading participants:', error);
   }
@@ -129,7 +129,7 @@ async function loadParticipants() {
 async function loadEnrollments() {
   try {
     const enrollments = await API.get('/api/enrollments');
-    allEnrollments = enrollments;
+    enrollmentsList = enrollments;
 
     // Update stats
     const stats = calculateEnrollmentStats(enrollments);
@@ -182,9 +182,9 @@ function filterEnrollments(status) {
   });
 
   // Filter data
-  let filteredData = allEnrollments;
+  let filteredData = enrollmentsList;
   if (status !== 'all') {
-    filteredData = allEnrollments.filter(e => e.enrollmentStatus === status);
+    filteredData = enrollmentsList.filter(e => e.enrollmentStatus === status);
   }
 
   enrollmentsTable.setData(filteredData);
@@ -314,7 +314,7 @@ function getEnrollmentFormHTML(enrollment = null) {
         <label for="userId">Participant</label>
         <select id="userId" name="userId" class="form-select" required ${isEdit ? 'disabled' : ''}>
           <option value="">Select participant...</option>
-          ${allParticipants.map(p => `
+          ${enrollmentsParticipants.map(p => `
             <option value="${p.id}" ${isEdit && enrollment.userId === p.id ? 'selected' : ''}>
               ${p.firstName} ${p.lastName} (${p.email})
             </option>
@@ -327,7 +327,7 @@ function getEnrollmentFormHTML(enrollment = null) {
         <label for="cohortId">Cohort</label>
         <select id="cohortId" name="cohortId" class="form-select" required ${isEdit ? 'disabled' : ''}>
           <option value="">Select cohort...</option>
-          ${allCohorts.map(c => `
+          ${enrollmentsCohorts.map(c => `
             <option value="${c.id}" ${isEdit && enrollment.cohortId === c.id ? 'selected' : ''}>
               ${c.name} - ${c.programmeName || 'No programme'}
             </option>

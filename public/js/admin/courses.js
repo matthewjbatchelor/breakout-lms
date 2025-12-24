@@ -6,8 +6,8 @@
 console.log('✅ Courses.js loaded');
 
 var coursesTable = null;
-var allCourses = [];
-var allProgrammes = [];
+var coursesList = [];
+var coursesProgrammes = [];
 
 /**
  * Initialize the courses view
@@ -83,7 +83,7 @@ async function initCoursesView() {
  */
 async function loadProgrammes() {
   try {
-    allProgrammes = await API.get('/api/programmes');
+    coursesProgrammes = await API.get('/api/programmes');
   } catch (error) {
     console.error('Error loading programmes:', error);
   }
@@ -95,7 +95,7 @@ async function loadProgrammes() {
 async function loadCourses() {
   try {
     const courses = await API.get('/api/courses');
-    allCourses = courses;
+    coursesList = courses;
 
     // Calculate stats
     const moduleCount = courses.reduce((sum, c) => sum + (c.moduleCount || 0), 0);
@@ -253,7 +253,7 @@ function getCourseFormHTML(course = null) {
         <label for="programmeId">Programme</label>
         <select id="programmeId" name="programmeId" class="form-select" required>
           <option value="">Select programme...</option>
-          ${allProgrammes.map(p => `
+          ${coursesProgrammes.map(p => `
             <option value="${p.id}" ${isEdit && course.programmeId === p.id ? 'selected' : ''}>
               ${p.name}
             </option>
@@ -381,7 +381,7 @@ async function managePrerequisites(courseId) {
       API.get(`/api/courses/${courseId}/dependents`)
     ]);
 
-    const availableCourses = allCourses.filter(c =>
+    const availableCourses = coursesList.filter(c =>
       c.id !== courseId && !prerequisites.some(p => p.id === c.id)
     );
 

@@ -6,8 +6,8 @@
 console.log('✅ Attendance.js loaded');
 
 var attendanceTable = null;
-var allAttendance = [];
-var allCohorts = [];
+var attendanceRecords = [];
+var attendanceCohorts = [];
 var selectedCohortId = null;
 
 /**
@@ -119,12 +119,12 @@ async function initAttendanceView() {
  */
 async function loadCohorts() {
   try {
-    allCohorts = await API.get('/api/cohorts');
+    attendanceCohorts = await API.get('/api/cohorts');
 
     // Populate cohort filter dropdown
     const cohortFilter = document.getElementById('cohortFilter');
     if (cohortFilter) {
-      allCohorts.forEach(cohort => {
+      attendanceCohorts.forEach(cohort => {
         const option = document.createElement('option');
         option.value = cohort.id;
         option.textContent = `${cohort.name} - ${cohort.programmeName || 'No programme'}`;
@@ -142,7 +142,7 @@ async function loadCohorts() {
 async function loadAttendance() {
   try {
     const attendance = await API.get('/api/attendance');
-    allAttendance = attendance;
+    attendanceRecords = attendance;
 
     // Update stats
     updateStats(attendance);
@@ -189,9 +189,9 @@ function updateStats(records) {
 function filterByCohort(cohortId) {
   selectedCohortId = cohortId ? parseInt(cohortId) : null;
 
-  let filteredData = allAttendance;
+  let filteredData = attendanceRecords;
   if (selectedCohortId) {
-    filteredData = allAttendance.filter(a => a.cohortId === selectedCohortId);
+    filteredData = attendanceRecords.filter(a => a.cohortId === selectedCohortId);
   }
 
   updateStats(filteredData);
@@ -212,8 +212,8 @@ function filterAttendance(status) {
 
   // Start with cohort filter if applied
   let filteredData = selectedCohortId
-    ? allAttendance.filter(a => a.cohortId === selectedCohortId)
-    : allAttendance;
+    ? attendanceRecords.filter(a => a.cohortId === selectedCohortId)
+    : attendanceRecords;
 
   // Apply status filter
   if (status !== 'all') {
@@ -349,7 +349,7 @@ function getAttendanceFormHTML(record = null, participants = []) {
           <label for="cohortId">Cohort</label>
           <select id="cohortId" name="cohortId" class="form-select" required onchange="loadCohortParticipants(this.value)">
             <option value="">Select cohort...</option>
-            ${allCohorts.map(c => `
+            ${attendanceCohorts.map(c => `
               <option value="${c.id}" ${selectedCohortId === c.id ? 'selected' : ''}>
                 ${c.name} - ${c.programmeName || 'No programme'}
               </option>

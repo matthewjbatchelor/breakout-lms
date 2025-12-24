@@ -6,8 +6,8 @@
 console.log('✅ Cohorts.js loaded');
 
 var cohortsTable = null;
-var allCohorts = [];
-var allProgrammes = [];
+var cohortsList = [];
+var cohortsProgrammes = [];
 
 /**
  * Initialize the cohorts view
@@ -99,7 +99,7 @@ async function initCohortsView() {
  */
 async function loadProgrammes() {
   try {
-    allProgrammes = await API.get('/api/programmes');
+    cohortsProgrammes = await API.get('/api/programmes');
   } catch (error) {
     console.error('Error loading programmes:', error);
   }
@@ -111,7 +111,7 @@ async function loadProgrammes() {
 async function loadCohorts() {
   try {
     const cohorts = await API.get('/api/cohorts');
-    allCohorts = cohorts;
+    cohortsList = cohorts;
 
     // Update stats
     const stats = calculateCohortStats(cohorts);
@@ -161,9 +161,9 @@ function filterCohorts(status) {
   });
 
   // Filter data
-  let filteredData = allCohorts;
+  let filteredData = cohortsList;
   if (status !== 'all') {
-    filteredData = allCohorts.filter(c => c.status === status);
+    filteredData = cohortsList.filter(c => c.status === status);
   }
 
   cohortsTable.setData(filteredData);
@@ -308,7 +308,7 @@ function getCohortFormHTML(cohort = null) {
           <label for="programmeId">Programme</label>
           <select id="programmeId" name="programmeId" class="form-select" required>
             <option value="">Select programme...</option>
-            ${allProgrammes.map(p => `
+            ${cohortsProgrammes.map(p => `
               <option value="${p.id}" ${isEdit && cohort.programmeId === p.id ? 'selected' : ''}>
                 ${p.name}
               </option>

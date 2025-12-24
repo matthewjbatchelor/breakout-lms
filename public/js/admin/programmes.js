@@ -3,8 +3,8 @@
  * Admin interface for managing programmes
  */
 
-let programmesTable = null;
-let allProgrammes = [];
+var programmesTable = null;
+var programmesList = [];
 
 /**
  * Initialize the programmes view
@@ -96,7 +96,7 @@ async function initProgrammesView() {
 async function loadProgrammes() {
   try {
     const programmes = await API.get('/api/programmes?stats=true');
-    allProgrammes = programmes;
+    programmesList = programmes;
 
     // Update stats
     const stats = calculateProgrammeStats(programmes);
@@ -145,9 +145,9 @@ function filterProgrammes(status) {
   });
 
   // Filter data
-  let filteredData = allProgrammes;
+  let filteredData = programmesList;
   if (status !== 'all') {
-    filteredData = allProgrammes.filter(p => p.status === status);
+    filteredData = programmesList.filter(p => p.status === status);
   }
 
   programmesTable.setData(filteredData);
