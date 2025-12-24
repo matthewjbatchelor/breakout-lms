@@ -5,10 +5,10 @@
 
 console.log('✅ Attendance.js loaded');
 
-let attendanceTable = null;
-let allAttendance = [];
-let allCohorts = [];
-let selectedCohortId = null;
+var attendanceTable = null;
+var allAttendance = [];
+var allCohorts = [];
+var selectedCohortId = null;
 
 /**
  * Initialize the attendance view

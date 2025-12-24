@@ -5,9 +5,9 @@
 
 console.log('✅ Courses.js loaded');
 
-let coursesTable = null;
-let allCourses = [];
-let allProgrammes = [];
+var coursesTable = null;
+var allCourses = [];
+var allProgrammes = [];
 
 /**
  * Initialize the courses view

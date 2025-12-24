@@ -5,9 +5,9 @@
 
 console.log('✅ Cohorts.js loaded');
 
-let cohortsTable = null;
-let allCohorts = [];
-let allProgrammes = [];
+var cohortsTable = null;
+var allCohorts = [];
+var allProgrammes = [];
 
 /**
  * Initialize the cohorts view
