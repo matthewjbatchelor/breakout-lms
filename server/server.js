@@ -126,6 +126,9 @@ async function startServer() {
     const seedMigration = require('./migrations/002_seed_initial_data');
     await seedMigration.up();
 
+    const boardwaveAdminMigration = require('./migrations/003_create_boardwave_admin');
+    await boardwaveAdminMigration.up();
+
     // Start server
     app.listen(PORT, () => {
       console.log(`\n✅ Server running on port ${PORT}`);
